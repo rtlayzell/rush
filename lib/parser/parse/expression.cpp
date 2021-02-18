@@ -301,8 +301,9 @@ namespace rush {
          if (is_unary_prefix_operator(tok)) result = parse_unary_expr();
          else switch (tok.symbol()) {
          case symbols::underscore:
-            if (peek_skip_indent(1).is(symbols::thick_arrow))
-               result = parse_lambda_expr();
+            result = peek_skip_indent(1).is(symbols::thick_arrow)
+               ? parse_lambda_expr()
+               : parse_discard_pattern();
             break;
          case symbols::ellipses: result = parse_spread_expr(); break;
          case symbols::left_parenthesis: result = parse_paren_expr(); break;

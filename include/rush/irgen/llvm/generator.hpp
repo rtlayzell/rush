@@ -28,7 +28,7 @@
 #include <unordered_map>
 
 namespace rush::irgen {
-   template <typename IRNodeT>
+   template <typename IRNodeT = ::llvm::Value>
    class llvm_ir_generator : public ast::traversal {
    public:
       template <typename IRNodeU>

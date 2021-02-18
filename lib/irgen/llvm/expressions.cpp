@@ -16,7 +16,67 @@
 #include "rush/irgen/llvm/types.hpp"
 #include "rush/irgen/llvm/expressions.hpp"
 
+#include "fmt/format.h"
+
 using namespace rush;
+
+
+// class llvm_integral_binary_operation : public irgen::llvm_ir_generator<llvm::Value> {
+// private:
+//    ast::expression const& _binexpr;
+//    llvm::Value* _result;
+//    llvm::Value* _lhs;
+//    llvm::Value* _rhs;
+
+// public:
+//    llvm_integral_binary_operation(ast::expression const& expr, llvm::Value* lhs, llvm::Value* rhs) {
+
+//    }
+// }
+
+// class llvm_floating_binary_operation : public irgen::llvm_ir_generator<llvm::Value> {
+// private:
+//    llvm::Value* _result;
+//    llvm::Value* _lhs;
+//    llvm::Value* _rhs;
+
+// public:
+//    llvm_ir_right_shift(llvm::Value* lhs, llvm::Value* rhs)
+//       : _result { nullptr }
+//       , _lhs { lhs }
+//       , _rhs { rhs } {}
+
+//    virtual llvm::Value* result() const noexcept override {
+//       return _result;
+//    }
+
+//    virtual void visit_builtin_integral_type(ast::builtin_integral_type const& type) override {
+//       _result = builder().CreateLShr(_lhs, _rhs, "lshrtmp");
+//    }
+// };
+
+class llvm_ir_modulo : public irgen::llvm_ir_generator<llvm::Value> {
+private:
+   llvm::Value* _result;
+   llvm::Value* _lhs;
+   llvm::Value* _rhs;
+
+public:
+   llvm_ir_modulo(llvm::Value* lhs, llvm::Value* rhs)
+      : _result { nullptr }
+      , _lhs { lhs }
+      , _rhs { rhs } {}
+
+   virtual llvm::Value* result() const noexcept override {
+      return _result;
+   }
+
+   virtual void visit_builtin_integral_type(ast::builtin_integral_type const& type) override {
+      _result = type.is_signed()
+         ? builder().CreateSRem(_lhs, _rhs, "modtmp")
+         : builder().CreateURem(_lhs, _rhs, "modtmp");
+   }
+};
 
 class llvm_ir_addition : public irgen::llvm_ir_generator<llvm::Value> {
 private:
@@ -162,11 +222,21 @@ public:
 };
 
 
-namespace rush::irgen {
+
+namespace rush::irgen::llvm {
 
    void llvm_ir_expression_generator::visit_unary_expr(ast::unary_expression const& expr) {
-      auto operand = rush::visit(expr.operand(), *this).result();
-      _result = nullptr;
+      auto operand = generate(expr.operand(), *this).result();
+      switch (expr.opkind()) {
+         case ast::unary_operator::positive:
+            _result = operand;
+            break;
+         case ast::unary_operator::negative: {
+            auto name = fmt::format("{}.neg", operand->getName().str());
+            _result = builder().CreateNeg(operand, name);
+         } break;
+         default: break;
+      }
    }
 
    void llvm_ir_expression_generator::visit_binary_expr(ast::binary_expression const& expr) {
@@ -180,7 +250,8 @@ namespace rush::irgen {
       _result = nullptr;
       switch (expr.opkind()) {
          case ast::binary_operator::exponentiation: break;
-         case ast::binary_operator::modulo: break;
+         case ast::binary_operator::modulo:
+            _result = generate(expr.result_type(), llvm_ir_modulo { lhs, rhs }).result(); break;
          case ast::binary_operator::addition:
             _result = generate(expr.result_type(), llvm_ir_addition { lhs, rhs }).result(); break;
          case ast::binary_operator::subtraction:
@@ -197,8 +268,16 @@ namespace rush::irgen {
          case ast::binary_operator::less_equals: break;
          case ast::binary_operator::greater_than: break;
          case ast::binary_operator::greater_equals: break;
-         case ast::binary_operator::equal: break;
-         case ast::binary_operator::not_equal: break;
+         case ast::binary_operator::equal:
+            _result = lhs->getType()->isFloatingPointTy() || rhs->getType()->isFloatingPointTy()
+                    ? builder().CreateFCmpOEQ(lhs, rhs, "cmpeq")
+                    : builder().CreateICmpEQ(lhs, rhs, "cmpeq");
+            break;
+         case ast::binary_operator::not_equal:
+            _result = lhs->getType()->isFloatingPointTy() || rhs->getType()->isFloatingPointTy()
+                    ? builder().CreateFCmpONE(lhs, rhs, "cmpeq")
+                    : builder().CreateICmpNE(lhs, rhs, "cmpeq");
+            break;
          case ast::binary_operator::bitwise_and: break;
          case ast::binary_operator::bitwise_xor: break;
          case ast::binary_operator::bitwise_or: break;
@@ -222,23 +301,23 @@ namespace rush::irgen {
    }
 
    void llvm_ir_expression_generator::visit_invoke_expr(ast::invoke_expression const& expr) {
-      struct function_call_generator : llvm_ir_generator<llvm::CallInst>{
-         llvm::CallInst* _result = nullptr;
+      struct function_call_generator : llvm_ir_generator<::llvm::CallInst>{
+         ::llvm::CallInst* _result = nullptr;
          ast::invoke_expression const& _expr;
       public:
          function_call_generator(ast::invoke_expression const& expr)
             : _expr { expr } {}
 
-         virtual llvm::CallInst* result() const noexcept override {
+         virtual ::llvm::CallInst* result() const noexcept override {
             return _result;
          }
 
          virtual void visit_identifier_expr(ast::identifier_expression const& expr) override {
-            auto function = static_cast<llvm::Function*>(lookup(expr.declaration()));
-               std::vector<llvm::Value *> args;
+            auto function = static_cast<::llvm::Function*>(lookup(expr.declaration()));
+               std::vector<::llvm::Value*> args;
                for (auto& arg : _expr.arguments())
                   args.push_back(generate(arg, llvm_ir_expression_generator {}).result());
-               _result = builder().CreateCall(function, args, "calltmp");
+               _result = builder().CreateCall(function, args, fmt::format("{}.retval", function->getName().str()));
          }
       };
 
@@ -246,24 +325,49 @@ namespace rush::irgen {
    }
 
    void llvm_ir_expression_generator::visit_identifier_expr(ast::identifier_expression const& expr) {
-      _result = lookup(expr.declaration());
-      if (_result) {
-         builder().CreateLoad(_result, std::string { expr.name() });
+      if ((_result = lookup(expr.declaration()))) {
+         _result = builder().CreateLoad(_result, std::string { expr.name() });
       }
+   }
+
+   void llvm_ir_expression_generator::visit_literal_expr(ast::string_literal_expression const& expr) {
+      // _result = nullptr;
+      // auto type = ::llvm::ArrayType::get(
+      //    ::llvm::IntegerType::getInt8Ty(context()),
+      //    expr.value().length());
+
+      // _result = builder().CreateGlobalString(expr.value(), "str");
+
+      // std::vector<char> data;
+      // std::copy(expr.value().begin(), expr.value().end(), std::back_inserter(data));
+      // ::llvm::StringLiteral::
+      // _result = ::llvm::ConstantArray::get(type, context(), data);
+   }
+
+   void llvm_ir_expression_generator::visit_literal_expr(ast::boolean_literal_expression const& expr) {
+      _result = nullptr;
+      auto type = generate(expr.result_type(), llvm_ir_type_generator {}).result();
+      if (type) _result = ::llvm::ConstantInt::get(type, (int)expr.value(), false);
    }
 
    void llvm_ir_expression_generator::visit_literal_expr(ast::integer_literal_expression const& expr) {
       _result = nullptr;
       auto type = generate(expr.result_type(), llvm_ir_type_generator {}).result();
-      _result = llvm::ConstantInt::get(type, expr.value(), expr.is_signed());
+      if (type) _result = ::llvm::ConstantInt::get(type, expr.value(), expr.is_signed());
    }
 
    void llvm_ir_expression_generator::visit_literal_expr(ast::floating_literal_expression const& expr) {
       _result = nullptr;
       switch (expr.result_type().as<ast::builtin_floating_point_type>()->fpkind()) {
          case ast::floating_point_kind::ieee16: break;
-         case ast::floating_point_kind::ieee32: _result = llvm::ConstantFP::get(context(), llvm::APFloat((float)expr.value())); break;
-         case ast::floating_point_kind::ieee64: _result = llvm::ConstantFP::get(context(), llvm::APFloat((double)expr.value())); break;
+         case ast::floating_point_kind::ieee32:
+            _result = ::llvm::ConstantFP::get(context(),
+               ::llvm::APFloat((float)expr.value()));
+            break;
+         case ast::floating_point_kind::ieee64:
+            _result = ::llvm::ConstantFP::get(context(),
+               ::llvm::APFloat((double)expr.value()));
+            break;
          case ast::floating_point_kind::ieee80: break;
          case ast::floating_point_kind::ieee128: break;
          case ast::floating_point_kind::ppc128: break;

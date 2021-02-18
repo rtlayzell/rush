@@ -1,0 +1,44 @@
+import std.io
+
+import rush.lang
+import rush.lang.tokens
+
+
+class lexer:
+public:
+   func lexer(opts: lexer_options):
+      _pos = iterable<char>.empty
+      _opts = opts
+
+   func tokenize(src: source):
+      _pos = src.iterator()
+      while !eof():
+         yield next_token()
+
+private:
+   var _pos: iterable<char>
+   var _opts: lexer_options
+
+   func eof => _pos.next();
+
+   func check(pred: char -> bool):
+      return pred(_pos.value)
+
+   func peek:
+      return _pos.value
+
+   func next:
+      _pos.next()
+      return _pos.value
+
+   func next_token:
+      var space = scan_whitespace();
+      if space: return space.value;
+
+      if check(is_digit): return scan_numeric_literal()
+      if check(is_quote): return scan_string_literal()
+      if check(is_symbol): return scan_symbol()
+      if check(is_ident_head): return scan_identifier()
+      if check(is_comment_head): return scan_comment()
+
+      return tokens::error(peek())

@@ -42,6 +42,8 @@ namespace rush {
 
 		lexer(lexer&& other) = default;
 		lexer& operator = (lexer&& other) = default;
+
+      lexical_analysis tokenize(rush::source&&);
 		lexical_analysis tokenize(rush::source const&);
 
    private:

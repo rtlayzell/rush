@@ -51,6 +51,12 @@ namespace rush::ast {
          return _parent;
       }
 
+      virtual rush::location_range location() const noexcept {
+         return {
+            rush::location::undefined ,
+            rush::location::undefined };
+      }
+
       void attach(ast::context& context);
       virtual void accept(ast::visitor&) const = 0;
       virtual void accept(ast::visitor&& v) const { accept(v); }

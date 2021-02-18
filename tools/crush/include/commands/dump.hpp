@@ -35,7 +35,7 @@ namespace crush::commands {
    void dump_llvm_ir(std::vector<rush::source>& srcs, cxxopts::ParseResult& opts) {
       auto ctx = rush::ast::context {};
       auto ast = rush::parse(srcs.begin(), srcs.end(), ctx);
-      auto ir = rush::irgen::llvm(ast);
+      auto ir = rush::irgen::genllvm(ast);
       ir.dump();
    }
 

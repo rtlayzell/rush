@@ -1,0 +1,55 @@
+# Rush Programming Language Demo
+# This is a comment.
+
+import std.io
+import std.math
+
+func sqrt(x: float) => x
+func println(args: ...string) => pass
+
+struct vector2:
+public:
+   let x, y: float
+   get length => sqrt(dot(this, this))
+
+   func vector2 => this(0, 0)
+
+   func vector2(x, y: float):
+      this.x = x
+      this.y = y
+
+   func add(u: vector2) => new vector2(x + u.x, y + u.y)
+   func sub(u: vector2) => new vector2(x - u.x, y - u.y)
+
+func to_string({x, y}: @vector2) => "($x, $y)"
+
+func dot(u, v: @vector2):
+   let xx = u.x * v.x
+   let yy = u.y * v.y
+   return xx + yy
+
+func idiv(a, b: int) => (
+   a / b,
+   a % b)
+
+func main():
+   let u = new vector2(1, 0)
+   if u.length == 1:
+      println("$u is unit length.")
+   else:
+      println("$u is not unit length.")
+
+   let xs = [1, 2, 3]
+   for x in xs:
+      println(x)
+
+   let vs = [
+      new vector2(0, 2),
+      new vector2(1, 1),
+      new vector2(2, 0),
+   ]
+
+   for {x, y} in vs:
+      println("[$x, $y]")
+
+   return u.add(u).sub(u)

@@ -1,8 +1,10 @@
 project(irgen VERSION ${RUSH_VERSION} LANGUAGES CXX)
 
 rush_add_library(irgen
-   llvm/types.cpp
+   llvm/declarations.cpp
    llvm/expressions.cpp
+   llvm/statements.cpp
+   llvm/types.cpp
    llvm.cpp)
 
 target_include_directories(irgen PUBLIC

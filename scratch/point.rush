@@ -1,0 +1,25 @@
+import std.io
+import std.math
+
+struct point
+public:
+   let x, y: float
+
+   func point(x, y: float):
+      this.x = x
+      this.y = y
+
+func to_string({x, y}: @point) => "($x, $y)"
+
+func distance(p, q: point):
+   let dx = q.x - p.x
+   let dy = q.y - p.y
+   return sqrt(dx^2 + dy^2)
+
+## entry-point
+func main:
+   let p = new point(10, 2)
+   let q = new point(4, 32)
+
+   println("The distance between $p and $q is: ${distance(p, q)} units.")
+   return 0

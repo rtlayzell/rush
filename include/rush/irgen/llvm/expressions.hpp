@@ -23,8 +23,8 @@
 #include "rush/irgen/llvm/generator.hpp"
 
 
-namespace rush::irgen {
-   class llvm_ir_expression_generator : public llvm_ir_generator<llvm::Value> {
+namespace rush::irgen::llvm {
+   class llvm_ir_expression_generator : public llvm_ir_generator<::llvm::Value> {
    private:
       ::llvm::Value* _result;
 
@@ -32,14 +32,18 @@ namespace rush::irgen {
       llvm_ir_expression_generator()
          : _result { nullptr } {}
 
-      virtual llvm::Value* result() const override {
+      virtual ::llvm::Value* result() const override {
          return _result;
       }
 
       virtual void visit_unary_expr(ast::unary_expression const&) override;
       virtual void visit_binary_expr(ast::binary_expression const&) override;
+
+      virtual void visit_literal_expr(ast::string_literal_expression const&) override;
       virtual void visit_literal_expr(ast::integer_literal_expression const&) override;
+      virtual void visit_literal_expr(ast::boolean_literal_expression const&) override;
       virtual void visit_literal_expr(ast::floating_literal_expression const&) override;
+
       virtual void visit_identifier_expr(ast::identifier_expression const&) override;
       virtual void visit_invoke_expr(ast::invoke_expression const& expr) override;
    };

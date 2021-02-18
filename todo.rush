@@ -1,0 +1,37 @@
+## TODO: before moving on to SEMA and IR generation.
+## - Resolve oveloaded symbols/identifiers based on the context they're being used in.
+## - Resolve lambda parameters without type annotation based on the context of the lambda definition (argument, initializer, etc.).
+
+## Additional..
+## - Add recursive_type which will wrap infinitely recursing function return types. Print it as "<type> -> ..."
+## - Add a new expression type that will represent the body of an auto-property.
+
+## Remaining parser features
+## - generics
+## - async/await
+## - base classes/structs
+## - enums
+## - concepts
+## - interfaces
+## - named tuple types
+## - qualified types (e.g. module::type, class::type, struct::type, etc.)
+## - fix nested classes/structs to properly print member access (instead of module access)
+## - load modules
+
+## Add location/location_range to AST nodes.
+
+## Introduce syntax for conveniently parsing mathematical expressions like:
+let y := 1.5x^2 - .5x + 1
+
+func f(x) := mx * c
+
+foo(:= mx + c)
+
+func foo(f(x: int) => x)
+
+func main:
+   let m := 1
+   let c := 2
+   let f(x: int) := mx + c
+
+   let f(x: int) => m * x + c

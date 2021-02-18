@@ -67,13 +67,17 @@ namespace rush {
    }
 
    std::string_view source::id() const {
-      auto ident = (*_pimpl->buffer)->getBufferIdentifier();
-      return { ident.begin(), ident.size() };
+      if (_pimpl->buffer) {
+         auto ident = (*_pimpl->buffer)->getBufferIdentifier();
+         return { ident.begin(), ident.size() };
+      } else { return "<no-id>"; }
    }
 
    std::string_view source::buffer() const {
-      auto buf = (*_pimpl->buffer)->getBuffer();
-      return { buf.begin(), buf.size() };
+      if (_pimpl->buffer) {
+         auto buf = (*_pimpl->buffer)->getBuffer();
+         return { buf.begin(), buf.size() };
+      } else { return ""; }
    }
 
    std::size_t source::size() const {

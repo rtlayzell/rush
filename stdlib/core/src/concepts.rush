@@ -19,6 +19,7 @@ requires orderable(lhs, rhs)
        & equatable(lhs, rhs)
 
 export concept hashable(arg: any) => hash(arg) -> uint
+export concept formattable(arg: any) => format(arg, "") -> string
 
 export concept signable(val: any):
 requires:

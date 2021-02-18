@@ -1,0 +1,22 @@
+
+## Transistive Immutability through the const keyword
+
+struct bar:
+public:
+	var baz: int
+
+func foo(x: const bar):
+	x.baz = 10  ## error: 'x' is reference to a constant bar
+
+func main:
+	## underlying type of const is inferred.
+	let b: const = new bar()
+
+
+## Explicit type-parameter constraints
+
+func <T> foo() => default(T)
+
+## '<:' symbol avoids ambiguity between explicit type-parameter
+## constraints and less/greater than expressions.
+func bar() => foo<:int>()

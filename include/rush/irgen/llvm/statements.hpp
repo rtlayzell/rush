@@ -15,29 +15,27 @@
 *************************************************************************/
 #pragma once
 
-#ifndef RUSH_IRGEN_LLVM_HPP
-#define RUSH_IRGEN_LLVM_HPP
+#ifndef RUSH_IRGEN_LLVM_STATEMENTS_HPP
+#define RUSH_IRGEN_LLVM_STATEMENTS_HPP
 
-#include "rush/parser/result.hpp"
-#include "rush/irgen/result.hpp"
+#include "rush/irgen/llvm/generator.hpp"
+#include "llvm/IR/Value.h"
 
-#include <memory>
-
-namespace rush::irgen {
-   class irgenerator_result {
-   public:
-      friend irgenerator_result genllvm(rush::syntax_analysis const&);
-      ~irgenerator_result();
-
-      void dump();
-
+namespace rush::irgen::llvm {
+   class llvm_ir_statement_generator
+   : public llvm_ir_generator<> {
    private:
-      struct impl;
-      std::unique_ptr<impl> _pimpl;
-      irgenerator_result(std::unique_ptr<impl>);
+      ::llvm::Value* _result;
+   public:
+      virtual ::llvm::Value* result() const noexcept override {
+         return _result;
+      }
+
+      virtual void visit_storage_decl(ast::storage_declaration const&) override;
+
+      virtual void visit_if_stmt(ast::conditional_statement const&) override;
+      virtual void visit_return_stmt(ast::result_statement const&) override;
    };
+} // rush::irgen
 
-   irgenerator_result genllvm(rush::syntax_analysis const&);
-}
-
-#endif // RUSH_IRGEN_LLVM_HPP
+#endif // RUSH_IRGEN_LLVM_STATEMENTS_HPP

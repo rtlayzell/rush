@@ -1,0 +1,5 @@
+
+func add(a, b: int) => a + b
+func sub(a, b: int) => a - b
+func mul(a, b: int) => a * b
+func div(a, b: int) => a / b

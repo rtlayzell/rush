@@ -102,10 +102,15 @@ namespace rush {
 
 	private:
 		std::vector<lexical_token> _tokens;
+      std::unique_ptr<rush::source> _osrc;
 
       explicit lexical_analysis(
          std::vector<lexical_token> toks)
          : _tokens(std::move(toks)) {}
+
+      void owned(std::unique_ptr<rush::source> src) {
+         _osrc = std::move(src);
+      }
 	};
 } // rush
 

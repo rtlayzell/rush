@@ -1,25 +1,25 @@
-export extern func cos(float) -> float
 export extern func sin(float) -> float
+export extern func cos(float) -> float
 export extern func tan(float) -> float
 
-export extern func cos(double) -> double
 export extern func sin(double) -> double
+export extern func cos(double) -> double
 export extern func tan(double) -> double
 
-export extern func acos(float) -> float
 export extern func asin(float) -> float
+export extern func acos(float) -> float
 export extern func atan(float) -> float
 
-export extern func acos(double) -> double
 export extern func asin(double) -> double
+export extern func acos(double) -> double
 export extern func atan(double) -> double
 
-export extern func cosh(float) -> float
 export extern func sinh(float) -> float
+export extern func cosh(float) -> float
 export extern func tanh(float) -> float
 
-export extern func cosh(double) -> double
 export extern func sinh(double) -> double
+export extern func cosh(double) -> double
 export extern func tanh(double) -> double
 
 export extern func pow(float, int) -> float
@@ -48,6 +48,6 @@ func max(a: orderable) => a
 export func min(a, b, rest: ...orderable) => min(a < b ? a : b, rest...)
 export func max(a, b, rest: ...orderable) => max(a < b ? b : a, rest...)
 
-func lerp(v0, v1, t: float) => (1 - t) * v0 + t * v1
-func lerp(v0, v1, t: double) => (1 - t) * v0 + t * v1
+export func lerp(v0, v1, t: float) => (1 - t) * v0 + t * v1
+export func lerp(v0, v1, t: double) => (1 - t) * v0 + t * v1
 

@@ -1,0 +1,16 @@
+## remove the ability to name tuples and replace with the concept of records.
+## tuples are now positional data structures only that may be created and accessed as follows:
+
+let t = (31, "reegan")
+let {age, name} = t
+
+## records replace named tuples and differ slightly in syntax.
+
+let r = {
+	age = 31,
+	name = "reegan",
+	properties = {
+		prop1 = "value1",
+		prop2 = "value2"
+	}
+}

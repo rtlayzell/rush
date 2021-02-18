@@ -1,0 +1,43 @@
+import std.io
+
+func <T> swap(a, b: ref T):
+   let tmp = a
+   a = b
+   b = tmp
+
+func length(xs: [int]) => 0
+
+func sort(xs: [orderable]):
+   var n = xs.length
+   var swapped = false
+   while !swapped:
+      swapped = false
+      for i in 1..^n:
+         if xs[i - 1] < xs[i]:
+            swap(xs[i - 1], xs[i])
+            swapped = true
+      n = n - 1
+   return xs;
+
+struct <...Ts> tuple
+public:
+   func tuple(first, elems: ...Ts):
+      pass
+
+func <T> zip(src: iterable<T>) -> (T):
+   for elem in src:
+      yield new tuple(elem)
+
+func <T, ...Ts> zip(first: iterable<T>, rest: ...iterable<Ts>):
+   let it1 = first.iterator()
+   let it2 = zip(...rest).iterator()
+   while it1.next() && it2.next():
+      yield (it1.value, ...it2.value)
+
+func main:
+   let xs = map(1...10, x => x ^ 2)
+   let ys = map(1...10, y => y ^ 3)
+   let zs = map(1...10, z => z ^ 4)
+
+   for {x, y, z} in zip(xs, ys, zs):
+      println("($x, $y, $z)")

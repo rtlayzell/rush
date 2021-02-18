@@ -38,17 +38,28 @@ namespace rush {
       auto tok = peek_skip_indent();
       auto& source = tok.source();
       std::vector<std::unique_ptr<ast::node>> results;
-      while (tok.is_not(symbols::eof) && &source == &tok.source()) {
+
+      for (
+         ; tok.is_not(symbols::eof)
+         && &source == &tok.source()
+         ;  tok = peek_skip_indent()) {
+
          while (consume_skip_indent(symbols::semi_colon)); // ignore stray semi-colons
          auto exported = consume_skip_indent(keywords::export_);
          auto decl_result = parse_toplevel_decl();
-         if (decl_result.failed())
-            return std::move(decl_result).as<ast::source_node>();
+         if (decl_result.failed()) {
+            auto expr_result = parse_expr();
+            if (expr_result.failed())
+               return std::move(decl_result).as<ast::source_node>();
 
-         results.push_back(exported
-            ? decls::exported(std::move(decl_result))
-            : decls::internal(std::move(decl_result)));
-         tok = peek_skip_indent();
+            results.push_back(
+               std::move(expr_result).as<ast::node>());
+         }
+         else {
+            results.push_back(exported
+               ? decls::exported(std::move(decl_result))
+               : decls::internal(std::move(decl_result)));
+         }
       }
 
       return ast::source(source, std::move(results));

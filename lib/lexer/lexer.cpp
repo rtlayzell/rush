@@ -530,19 +530,26 @@ namespace rush {
    lexical_analysis lex(std::string_view input, std::string_view id, lexer_options const& opts) {
       auto l = lexer { opts };
       auto src = source::from_string(input, id);
-      return l.tokenize(src);
+      return l.tokenize(std::move(src));
 	}
 
 	lexical_analysis lex(std::istream& input, std::string_view id, lexer_options const& opts) {
 		auto l = lexer { opts };
       auto src = source::from_stream(input, id);
-		return l.tokenize(src);
+		return l.tokenize(std::move(src));
 	}
 
    lexical_analysis lex(rush::source const& input, lexer_options const& opts) {
       auto l = lexer { opts };
       return l.tokenize(input);
 	}
+
+   lexical_analysis lexer::tokenize(rush::source&& src) {
+      auto osrc = std::make_unique<rush::source>(std::move(src));
+      auto result = this->tokenize(*osrc);
+      result.owned(std::move(osrc));
+      return std::move(result);
+   }
 
    lexical_analysis lexer::tokenize(rush::source const& src) {
       auto first = src.begin();

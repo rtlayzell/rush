@@ -29,6 +29,7 @@
 #include "rush/ast/exprs/invoke.hpp"
 #include "rush/ast/exprs/lambda.hpp"
 #include "rush/ast/exprs/list.hpp"
+#include "rush/ast/exprs/binary.hpp"
 
 #include "rush/ast/stmts/iteration.hpp"
 
@@ -191,6 +192,11 @@ public:
          auto expr_type = it->expression().result_type();
          if (auto t = expr_type.as<ast::array_type>()) {
             _type = t->underlying_type();
+         }
+         else if (auto e = dynamic_cast<ast::binary_expression const*>(&it->expression())) {
+            if (e->opkind() == ast::binary_operator::inclusive_range
+             || e->opkind() == ast::binary_operator::exclusive_range)
+               _type = e->result_type();
          }
       }
    }

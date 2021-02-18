@@ -52,6 +52,8 @@ public:
       return *_result;
    }
 
+   virtual void visit_module(ast::module_node const&) override { /* block from re-entry */ }
+   virtual void visit_source(ast::source_node const&) override { /* block from re-entry */ }
    virtual void visit_expr_list(ast::expression_list const&) override { /* block from re-entry */ }
    virtual void visit_block_stmt(ast::statement_block const&) override { /* block from re-entry */ }
 
